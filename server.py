@@ -3,6 +3,8 @@ import time
 import click
 import socket
 import logging
+import traceback
+
 
 # Logger for Verification failures
 logger_verification = logging.getLogger(__name__+"verification")
@@ -18,8 +20,7 @@ logger_checksum.setLevel(logging.INFO)
 
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-udp_ip = "127.0.0.1"
+UDP_IP = "127.0.0.1"
 
 
 def write_log(log_type, msg, delay):
@@ -31,20 +32,17 @@ def write_log(log_type, msg, delay):
 
 
 @click.command()
-@click.option("-p", help="Port to listen UDP packets from")
+@click.option("-p", default='1337', help="Port to listen UDP packets from")
 @click.option("-d", default='1', help="Delay in seconds for writing to log files")
-@click.option("--binaries", help="Dictionary of {packet_id: binary_path} mappings")
-@click.option("--keys", help="Dictionary of {packet_id: key_file_path} mappings")
+@click.option("--binaries", default='{"0x42": "cat.jpg"}', help="Dictionary of {packet_id: binary_path} mappings")
+@click.option("--keys", default='{"0x42": "key.bin"}', help="Dictionary of {packet_id: key_file_path} mappings")
 def main(p, d, binaries, keys):
-    sock.bind((udp_ip, int(p)))
-    count = 5
-    while count:
+    sock.bind((UDP_IP, int(p)))
+    while True:
         data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-        print("----------------START----------------------")
-        print("received message:", data)
-        print("received address", addr)
-        print("----------------END-----------------------\n")
-        count -= 1
+        print "----------------START----------------------"
+        print "received message:", data
+        print "----------------END-----------------------\n"
 
 
 if __name__ == "__main__":
@@ -52,4 +50,5 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         print("Processor exit with: {}".format(e))
+        traceback.print_exc()
         sys.exit(1)  # exit with error
